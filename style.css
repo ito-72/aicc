@@ -14,7 +14,7 @@ h1 {
 
 #choices {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2列 */
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   justify-items: center;
   margin-bottom: 1em;
@@ -28,8 +28,8 @@ h1 {
   max-width: 180px;
   padding: 10px;
   font-size: 1rem;
-  white-space: normal;        /* 長い単語も折り返す */
-  word-break: break-word;     /* 日本語や記号にも対応 */
+  white-space: normal;
+  word-break: break-word;
   text-align: center;
   background-color: white;
   border: 2px solid #ccc;
@@ -49,7 +49,7 @@ h1 {
   border-color: #33aaff;
 }
 
-#answer {
+#answer, #start-button, #check-score {
   margin-top: 10px;
   padding: 12px 24px;
   font-size: 1.1rem;
@@ -61,11 +61,11 @@ h1 {
   transition: background-color 0.2s ease;
 }
 
-#answer:hover {
+#answer:hover, #start-button:hover, #check-score:hover {
   background-color: #45a049;
 }
 
-#result {
+#result, #score {
   margin-top: 1em;
   font-size: 1.2rem;
   font-weight: bold;

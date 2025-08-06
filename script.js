@@ -1,10 +1,16 @@
 let quizData = null;
 let selectedIndex = null;
 
+// ヘッダーに応じた単位を定義（必要に応じて追加）
+const unitMap = {
+  "㎡": "㎡",
+  "天井高": "m"
+};
+
 async function loadQuizData() {
   try {
     const res = await fetch(CONFIG.GAS_URL);
-    const data = await res.json(); // ← [[ヘッダー], [...], [...]]
+    const data = await res.json(); // [[ヘッダー], [...], [...]]
     quizData = data;
     createQuestion();
   } catch (e) {
@@ -14,10 +20,9 @@ async function loadQuizData() {
 }
 
 function createQuestion() {
-  const headers = quizData[0];          // ヘッダー行
-  const rows = quizData.slice(1);       // データ行
+  const headers = quizData[0];
+  const rows = quizData.slice(1);
 
-  // ランダムに行と列を選ぶ（列は1列目以降＝項目）
   const rowIndex = Math.floor(Math.random() * rows.length);
   const colIndex = Math.floor(Math.random() * (headers.length - 1)) + 1;
 
@@ -25,20 +30,18 @@ function createQuestion() {
   const correctAnswer = selectedRow[colIndex];
   const questionText = `${selectedRow[0]} の ${headers[colIndex]} は？`;
 
-  // 他の行から同じ列の値を選択肢として集める
   const otherChoices = rows
     .map(r => r[colIndex])
     .filter(v => v !== "" && v !== correctAnswer);
 
-  // 重複除去・シャッフル
   const uniqueShuffled = shuffleArray([...new Set(otherChoices)]).slice(0, 3);
   const choices = shuffleArray([correctAnswer, ...uniqueShuffled]);
   const answerIndex = choices.indexOf(correctAnswer);
 
-  renderQuiz({ questionText, choices, answerIndex });
+  renderQuiz({ questionText, choices, answerIndex, unit: unitMap[headers[colIndex]] || "" });
 }
 
-function renderQuiz({ questionText, choices, answerIndex }) {
+function renderQuiz({ questionText, choices, answerIndex, unit }) {
   document.getElementById("question").textContent = questionText;
   const choicesDiv = document.getElementById("choices");
   choicesDiv.innerHTML = "";
@@ -47,7 +50,7 @@ function renderQuiz({ questionText, choices, answerIndex }) {
 
   choices.forEach((choice, index) => {
     const btn = document.createElement("button");
-    btn.textContent = choice + (typeof choice === "number" ? " m" : "");
+    btn.textContent = unit ? `${choice} ${unit}` : `${choice}`;
     btn.className = "choice-button";
     btn.onclick = () => {
       selectedIndex = index;
@@ -70,13 +73,12 @@ function renderQuiz({ questionText, choices, answerIndex }) {
       resultDiv.textContent = "✅ 正解！";
       resultDiv.style.color = "green";
     } else {
-      resultDiv.textContent = `❌ 不正解。正解は「${choices[answerIndex]}」`;
+      resultDiv.textContent = `❌ 不正解。正解は「${choices[answerIndex]}${unit ? ` ${unit}` : ""}」`;
       resultDiv.style.color = "red";
     }
   };
 }
 
-// シャッフル関数
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -85,5 +87,4 @@ function shuffleArray(array) {
   return array;
 }
 
-// 起動時に読み込み
 loadQuizData();

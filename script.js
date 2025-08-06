@@ -1,12 +1,6 @@
 let quizData = null;
 let selectedIndex = null;
 
-// ヘッダーに応じた単位を定義（必要に応じて追加）
-const unitMap = {
-  "㎡": "㎡",
-  "天井高": "m"
-};
-
 async function loadQuizData() {
   try {
     const res = await fetch(CONFIG.GAS_URL);
@@ -38,10 +32,10 @@ function createQuestion() {
   const choices = shuffleArray([correctAnswer, ...uniqueShuffled]);
   const answerIndex = choices.indexOf(correctAnswer);
 
-  renderQuiz({ questionText, choices, answerIndex, unit: unitMap[headers[colIndex]] || "" });
+  renderQuiz({ questionText, choices, answerIndex });
 }
 
-function renderQuiz({ questionText, choices, answerIndex, unit }) {
+function renderQuiz({ questionText, choices, answerIndex }) {
   document.getElementById("question").textContent = questionText;
   const choicesDiv = document.getElementById("choices");
   choicesDiv.innerHTML = "";
@@ -50,7 +44,7 @@ function renderQuiz({ questionText, choices, answerIndex, unit }) {
 
   choices.forEach((choice, index) => {
     const btn = document.createElement("button");
-    btn.textContent = unit ? `${choice} ${unit}` : `${choice}`;
+    btn.textContent = `${choice}`; // 単位なしで表示
     btn.className = "choice-button";
     btn.onclick = () => {
       selectedIndex = index;
@@ -73,7 +67,7 @@ function renderQuiz({ questionText, choices, answerIndex, unit }) {
       resultDiv.textContent = "✅ 正解！";
       resultDiv.style.color = "green";
     } else {
-      resultDiv.textContent = `❌ 不正解。正解は「${choices[answerIndex]}${unit ? ` ${unit}` : ""}」`;
+      resultDiv.textContent = `❌ 不正解。正解は「${choices[answerIndex]}」`;
       resultDiv.style.color = "red";
     }
   };

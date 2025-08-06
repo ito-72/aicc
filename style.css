@@ -13,15 +13,24 @@ h1 {
 }
 
 #choices {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2列 */
+  gap: 12px;
+  justify-items: center;
   margin-bottom: 1em;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .choice-button {
-  padding: 10px 20px;
-  font-size: 1.1rem;
+  width: 100%;
+  max-width: 180px;
+  padding: 10px;
+  font-size: 1rem;
+  white-space: normal;        /* 長い単語も折り返す */
+  word-break: break-word;     /* 日本語や記号にも対応 */
+  text-align: center;
   background-color: white;
   border: 2px solid #ccc;
   border-radius: 8px;

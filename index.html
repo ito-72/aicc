@@ -24,9 +24,13 @@
   </style>
 </head>
 
-
-
 <body>
+  <label for="sheet-select">出題データを選択：</label>
+  <select id="sheet-select">
+    <option value="rooms">会場情報（rooms）</option>
+    <option value="price">料金情報（price）</option>
+  </select>
+
   <button id="start-button">問題を作成する</button>
 
   <div id="quiz-container" style="display:none;"></div>

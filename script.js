@@ -18,8 +18,6 @@ function resetSameQuiz() {
   renderAllQuizzes();
   document.getElementById("score").textContent = "";
   document.getElementById("check-score").style.display = "inline-block";
-
-  // 一番上にスクロール
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -28,26 +26,27 @@ function goBackToStart() {
   document.getElementById("quiz-container").style.display = "none";
   document.getElementById("check-score").style.display = "none";
   document.getElementById("score").textContent = "";
+  document.getElementById("sheet-select").style.display = "inline-block";
   document.getElementById("start-button").style.display = "inline-block";
   document.getElementById("start-button").textContent = "問題を作成する";
   document.getElementById("start-button").disabled = false;
-
-  // 一番上にスクロール
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.getElementById("start-button").onclick = async () => {
   const startBtn = document.getElementById("start-button");
+  const sheetName = document.getElementById("sheet-select").value;
   startBtn.textContent = "作成中...";
   startBtn.disabled = true;
 
   try {
-    const res = await fetch(CONFIG.GAS_URL);
+    const res = await fetch(`${CONFIG.GAS_URL}?sheet=${encodeURIComponent(sheetName)}`);
     const data = await res.json();
     quizData = data;
     generateQuizList();
     renderAllQuizzes();
     startBtn.style.display = "none";
+    document.getElementById("sheet-select").style.display = "none";
     document.getElementById("quiz-container").style.display = "block";
     document.getElementById("check-score").style.display = "inline-block";
   } catch (e) {
@@ -59,6 +58,7 @@ function generateQuizList() {
   const headers = quizData[0];
   const rows = quizData.slice(1);
   quizList = [];
+  userAnswers = [];
 
   for (let i = 0; i < 10; i++) {
     const rowIndex = Math.floor(Math.random() * rows.length);
@@ -143,7 +143,6 @@ document.getElementById("check-score").onclick = () => {
   scoreDiv.textContent = `✅ ${correctCount} / ${quizList.length} 正解！\n${comment}`;
   document.getElementById("check-score").style.display = "none";
 
-  // ボタン追加
   const retryBtn = document.createElement("button");
   retryBtn.textContent = "もう一度";
   retryBtn.className = "action-button";

@@ -1,4 +1,4 @@
 // GASの公開URLをここに設定
 const CONFIG = {
-  GAS_URL: 'https://script.google.com/macros/s/AKfycbxKBejen61ATfOSBR98f6ZCpp8mg7IaDK2EcWOXlqJkKxcvV0_7DtZm9CsD1oilNF2F/exec'
+  GAS_URL: 'https://script.google.com/macros/s/AKfycbxD7rCAY4lrgP1IBXZrJZt13C1bd0OxTZfrITNbBjNCHwzDBJJ0oxfwu2jxP7T6peyh/exec'
 };

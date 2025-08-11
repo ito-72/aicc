@@ -1,58 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>クイズアプリ テスト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>会議室クイズ</title>
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
   <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { margin: 5px 0; padding: 8px 12px; border-radius: 5px; }
-    pre {
-      background: #f4f4f4;
-      padding: 10px;
-      border: 1px solid #ccc;
-      max-height: 300px;
-      overflow: auto;
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
     }
   </style>
 </head>
+
+
+
 <body>
-  <h1>クイズアプリAPIテスト</h1>
+  <button id="start-button">問題を作成する</button>
 
-  <!-- 会場取得テスト -->
-  <h2>会場取得</h2>
-  <button id="btn-rooms">会場取得</button>
-  <pre id="rooms-output">ここに会場名一覧が表示されます</pre>
+  <div id="quiz-container" style="display:none;"></div>
 
-  <!-- メタ情報取得テスト -->
-  <h2>メタ情報取得（シート名＋ヘッダー）</h2>
-  <button id="btn-meta">メタ取得</button>
-  <pre id="meta-output">ここにメタ情報が表示されます</pre>
+  <button id="check-score" style="display:none;">正解数は？</button>
+  <div id="score"></div>
 
-  <script>
-    // 会場取得
-    document.getElementById("btn-rooms").addEventListener("click", async () => {
-      try {
-        const res = await fetch("/api/getRooms", { method: "POST" });
-        if (!res.ok) throw new Error("HTTPエラー " + res.status);
-        const data = await res.json();
-        document.getElementById("rooms-output").textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById("rooms-output").textContent = "エラー: " + err.message;
-      }
-    });
-
-    // メタ情報取得
-    document.getElementById("btn-meta").addEventListener("click", async () => {
-      try {
-        const res = await fetch("/api/getMeta", { method: "POST" });
-        if (!res.ok) throw new Error("HTTPエラー " + res.status);
-        const data = await res.json();
-        document.getElementById("meta-output").textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        document.getElementById("meta-output").textContent = "エラー: " + err.message;
-      }
-    });
-  </script>
+  <script src="config.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

@@ -3,7 +3,7 @@ body {
   background-color: #f2f2f2;
   margin: 0;
   padding: 20px;
-  padding-top: calc(20px + env(safe-area-inset-top)); /* ← 追加 */
+  padding-top: calc(20px + env(safe-area-inset-top)); /* iPhoneノッチ対応 */
   text-align: center;
   color: #333;
 }
@@ -11,6 +11,7 @@ body {
 #start-button,
 #check-score {
   margin-top: 10px;
+  margin-bottom: 30px; /* 下に余白追加 */
   padding: 12px 24px;
   font-size: 1.1rem;
   background-color: #4CAF50;
@@ -80,7 +81,8 @@ body {
 }
 
 .action-button {
-  margin-top: 4px; /* 上寄せ */
+  margin-top: 10px; /* 上寄せ */
+  margin-bottom: 30px; /* 下に余白追加 */
   padding: 12px 24px;
   font-size: 1.1rem;
   background-color: #4CAF50;

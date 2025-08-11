@@ -33,6 +33,7 @@ function goBackToStart() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// スタートボタン押下
 document.getElementById("start-button").onclick = async () => {
   const startBtn = document.getElementById("start-button");
   const sheetName = document.getElementById("sheet-select").value;
@@ -54,32 +55,50 @@ document.getElementById("start-button").onclick = async () => {
   }
 };
 
+// クイズリスト生成
 function generateQuizList() {
   const headers = quizData[0];
   const rows = quizData.slice(1);
   quizList = [];
   userAnswers = [];
 
+  const sheetName = document.getElementById("sheet-select").value;
+
   for (let i = 0; i < 10; i++) {
     const rowIndex = Math.floor(Math.random() * rows.length);
     const colIndex = Math.floor(Math.random() * (headers.length - 1)) + 1;
     const selectedRow = rows[rowIndex];
-    const correctAnswer = selectedRow[colIndex];
+    const correctAnswerRaw = selectedRow[colIndex];
     const questionText = `${selectedRow[0]} の ${headers[colIndex]} は？`;
 
-    const otherChoices = rows
+    const otherChoicesRaw = rows
       .map(r => r[colIndex])
-      .filter(v => v !== "" && v !== correctAnswer);
+      .filter(v => v !== "" && v !== correctAnswerRaw);
 
-    const uniqueShuffled = shuffleArray([...new Set(otherChoices)]).slice(0, 3);
-    const choices = shuffleArray([correctAnswer, ...uniqueShuffled]);
-    const answerIndex = choices.indexOf(correctAnswer);
+    const uniqueShuffledRaw = shuffleArray([...new Set(otherChoicesRaw)]).slice(0, 3);
+    const choicesRaw = shuffleArray([correctAnswerRaw, ...uniqueShuffledRaw]);
+    const answerIndex = choicesRaw.indexOf(correctAnswerRaw);
 
-    quizList.push({ questionText, choices, answerIndex });
+    // 表示用フォーマット（priceシートだけ¥付きカンマ区切り）
+    const formatValue = v => {
+      if (sheetName === "price" && typeof v === "number") {
+        return `¥${v.toLocaleString('ja-JP')}`;
+      }
+      return v;
+    };
+    const choicesDisplay = choicesRaw.map(formatValue);
+
+    quizList.push({
+      questionText,
+      choicesRaw,       // 判定用（数値 or 文字列）
+      choicesDisplay,   // 表示用
+      answerIndex
+    });
     userAnswers.push(null);
   }
 }
 
+// クイズ表示
 function renderAllQuizzes() {
   const container = document.getElementById("quiz-container");
   container.innerHTML = "";
@@ -96,7 +115,7 @@ function renderAllQuizzes() {
     const choicesDiv = document.createElement("div");
     choicesDiv.className = "choices";
 
-    quiz.choices.forEach((choice, cIndex) => {
+    quiz.choicesDisplay.forEach((choice, cIndex) => {
       const btn = document.createElement("button");
       btn.textContent = `${choice}`;
       btn.className = "choice-button";
@@ -113,7 +132,7 @@ function renderAllQuizzes() {
           result.textContent = "✅ 正解！";
           result.style.color = "green";
         } else {
-          result.textContent = `❌ 不正解。正解は「${quiz.choices[quiz.answerIndex]}」`;
+          result.textContent = `❌ 不正解。正解は「${quiz.choicesDisplay[quiz.answerIndex]}」`;
           result.style.color = "red";
         }
       };
@@ -130,6 +149,7 @@ function renderAllQuizzes() {
   });
 }
 
+// 採点
 document.getElementById("check-score").onclick = () => {
   correctCount = 0;
   userAnswers.forEach((answer, index) => {
@@ -159,6 +179,7 @@ document.getElementById("check-score").onclick = () => {
   scoreDiv.appendChild(otherQuizBtn);
 };
 
+// コメント取得
 function getComment(score) {
   for (const group of comments) {
     const [min, max] = group.range;
@@ -170,6 +191,7 @@ function getComment(score) {
   return "";
 }
 
+// 配列シャッフル
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));

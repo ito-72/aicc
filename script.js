@@ -10,6 +10,26 @@ const comments = [
   { range: [10, 10], messages: ["満点！すごい！", "完璧！", "天才！"] }
 ];
 
+// 🔽 追加：同じジャンルで再出題
+function resetSameQuiz() {
+  userAnswers = [];
+  correctCount = 0;
+  generateQuizList(); // 同じジャンルの新しい出題
+  renderAllQuizzes();
+  document.getElementById("score").textContent = "";
+  document.getElementById("check-score").style.display = "inline-block";
+}
+
+// 🔽 追加：最初の画面に戻る
+function goBackToStart() {
+  document.getElementById("quiz-container").style.display = "none";
+  document.getElementById("check-score").style.display = "none";
+  document.getElementById("score").textContent = "";
+  document.getElementById("start-button").style.display = "inline-block";
+  document.getElementById("start-button").textContent = "問題を作成する";
+  document.getElementById("start-button").disabled = false;
+}
+
 document.getElementById("start-button").onclick = async () => {
   const startBtn = document.getElementById("start-button");
   startBtn.textContent = "作成中...";
@@ -118,6 +138,22 @@ document.getElementById("check-score").onclick = () => {
   const scoreDiv = document.getElementById("score");
   scoreDiv.textContent = `✅ ${correctCount} / ${quizList.length} 正解！\n${comment}`;
   document.getElementById("check-score").style.display = "none";
+
+  // --- ボタン追加 ---
+  const retryBtn = document.createElement("button");
+  retryBtn.textContent = "もう一度";
+  retryBtn.className = "action-button"; // ← CSSでデザイン統一
+  retryBtn.onclick = resetSameQuiz;
+
+  const otherQuizBtn = document.createElement("button");
+  otherQuizBtn.textContent = "別のクイズ";
+  otherQuizBtn.className = "action-button";
+  otherQuizBtn.style.marginLeft = "10px";
+  otherQuizBtn.onclick = goBackToStart;
+
+  scoreDiv.appendChild(document.createElement("br"));
+  scoreDiv.appendChild(retryBtn);
+  scoreDiv.appendChild(otherQuizBtn);
 };
 
 function getComment(score) {

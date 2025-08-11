@@ -1,0 +1,12 @@
+import { CONFIG } from '../config.js';
+
+export default async function handler(req, res) {
+  try {
+    const response = await fetch(`${CONFIG.GAS_URL}?mode=getSheetNames`);
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (error) {
+    console.error('getSheets error:', error);
+    res.status(500).json({ error: 'Failed to fetch sheets' });
+  }
+}

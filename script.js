@@ -10,17 +10,20 @@ const comments = [
   { range: [10, 10], messages: ["満点！すごい！", "完璧！", "天才！"] }
 ];
 
-// 🔽 追加：同じジャンルで再出題
+// 同じジャンルで再出題
 function resetSameQuiz() {
   userAnswers = [];
   correctCount = 0;
-  generateQuizList(); // 同じジャンルの新しい出題
+  generateQuizList();
   renderAllQuizzes();
   document.getElementById("score").textContent = "";
   document.getElementById("check-score").style.display = "inline-block";
+
+  // 一番上にスクロール
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// 🔽 追加：最初の画面に戻る
+// 最初の画面に戻る
 function goBackToStart() {
   document.getElementById("quiz-container").style.display = "none";
   document.getElementById("check-score").style.display = "none";
@@ -28,6 +31,9 @@ function goBackToStart() {
   document.getElementById("start-button").style.display = "inline-block";
   document.getElementById("start-button").textContent = "問題を作成する";
   document.getElementById("start-button").disabled = false;
+
+  // 一番上にスクロール
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 document.getElementById("start-button").onclick = async () => {
@@ -70,7 +76,7 @@ function generateQuizList() {
     const answerIndex = choices.indexOf(correctAnswer);
 
     quizList.push({ questionText, choices, answerIndex });
-    userAnswers.push(null); // 初期状態
+    userAnswers.push(null);
   }
 }
 
@@ -95,15 +101,13 @@ function renderAllQuizzes() {
       btn.textContent = `${choice}`;
       btn.className = "choice-button";
       btn.onclick = () => {
-        if (userAnswers[qIndex] !== null) return; // 一度だけ回答可能
+        if (userAnswers[qIndex] !== null) return;
 
         userAnswers[qIndex] = cIndex;
 
-        // ボタン状態変更
         choicesDiv.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
         btn.classList.add("selected");
 
-        // 結果表示
         const result = block.querySelector(".result");
         if (cIndex === quiz.answerIndex) {
           result.textContent = "✅ 正解！";
@@ -139,19 +143,19 @@ document.getElementById("check-score").onclick = () => {
   scoreDiv.textContent = `✅ ${correctCount} / ${quizList.length} 正解！\n${comment}`;
   document.getElementById("check-score").style.display = "none";
 
-  // --- ボタン追加 ---
+  // ボタン追加
   const retryBtn = document.createElement("button");
   retryBtn.textContent = "もう一度";
-  retryBtn.className = "action-button"; // ← CSSでデザイン統一
+  retryBtn.className = "action-button";
   retryBtn.onclick = resetSameQuiz;
 
   const otherQuizBtn = document.createElement("button");
   otherQuizBtn.textContent = "別のクイズ";
   otherQuizBtn.className = "action-button";
-  otherQuizBtn.style.marginLeft = "10px";
+  otherQuizBtn.style.marginLeft = "8px";
   otherQuizBtn.onclick = goBackToStart;
 
-  scoreDiv.appendChild(document.createElement("br"));
+  scoreDiv.appendChild(document.createElement("div"));
   scoreDiv.appendChild(retryBtn);
   scoreDiv.appendChild(otherQuizBtn);
 };

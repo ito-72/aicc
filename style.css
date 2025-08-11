@@ -80,7 +80,7 @@ body {
 }
 
 .action-button {
-  margin-top: 10px;
+  margin-top: 4px; /* 上寄せ */
   padding: 12px 24px;
   font-size: 1.1rem;
   background-color: #4CAF50;

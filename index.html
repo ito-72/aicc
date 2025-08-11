@@ -1,29 +1,57 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>クイズテスト</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>クイズアプリ テスト</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    button { margin: 5px 0; padding: 8px 12px; border-radius: 5px; }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      border: 1px solid #ccc;
+      max-height: 300px;
+      overflow: auto;
+    }
+  </style>
 </head>
 <body>
-  <h1>テスト表示</h1>
+  <h1>クイズアプリAPIテスト</h1>
 
-  <button id="load-rooms">会場名を取得</button>
-  <pre id="rooms-output"></pre>
+  <!-- 会場取得テスト -->
+  <h2>会場取得</h2>
+  <button id="btn-rooms">会場取得</button>
+  <pre id="rooms-output">ここに会場名一覧が表示されます</pre>
 
-  <button id="load-meta">メタ情報を取得</button>
-  <pre id="meta-output"></pre>
+  <!-- メタ情報取得テスト -->
+  <h2>メタ情報取得（シート名＋ヘッダー）</h2>
+  <button id="btn-meta">メタ取得</button>
+  <pre id="meta-output">ここにメタ情報が表示されます</pre>
 
-  <script src="api/config.js"></script>
-  <script src="api/quiz.js"></script>
   <script>
-    document.getElementById("load-rooms").addEventListener("click", async () => {
-      const data = await fetchRooms();
-      document.getElementById("rooms-output").textContent = JSON.stringify(data, null, 2);
+    // 会場取得
+    document.getElementById("btn-rooms").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/getRooms", { method: "POST" });
+        if (!res.ok) throw new Error("HTTPエラー " + res.status);
+        const data = await res.json();
+        document.getElementById("rooms-output").textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("rooms-output").textContent = "エラー: " + err.message;
+      }
     });
 
-    document.getElementById("load-meta").addEventListener("click", async () => {
-      const data = await fetchQuizMeta();
-      document.getElementById("meta-output").textContent = JSON.stringify(data, null, 2);
+    // メタ情報取得
+    document.getElementById("btn-meta").addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/getMeta", { method: "POST" });
+        if (!res.ok) throw new Error("HTTPエラー " + res.status);
+        const data = await res.json();
+        document.getElementById("meta-output").textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        document.getElementById("meta-output").textContent = "エラー: " + err.message;
+      }
     });
   </script>
 </body>

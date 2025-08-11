@@ -21,12 +21,37 @@
     body {
       font-family: 'M PLUS Rounded 1c', sans-serif;
     }
+    .tab-container {
+      margin: 20px 0;
+    }
+    .tab-container button {
+      margin: 4px;
+      padding: 8px 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .tab-container button.active {
+      background-color: #4CAF50;
+      color: white;
+    }
   </style>
 </head>
 
-
-
 <body>
+
+  <h1>会議室クイズ - 出題設定</h1>
+
+  <!-- シート名タブ -->
+  <div class="tab-container" id="sheet-tabs"></div>
+
+  <!-- 会場名タブ -->
+  <div class="tab-container" id="room-tabs"></div>
+
+  <!-- ヘッダータブ -->
+  <div class="tab-container" id="header-tabs"></div>
+
+  <!-- スタートボタン -->
   <button id="start-button">問題を作成する</button>
 
   <div id="quiz-container" style="display:none;"></div>
@@ -35,6 +60,58 @@
   <div id="score"></div>
 
   <script src="config.js"></script>
+  <script>
+    async function initMetaTabs() {
+      try {
+        const res = await fetch("/api/getQuizMeta"); // Vercel API
+        const meta = await res.json();
+
+        // シート名タブ
+        const sheetTabs = document.getElementById("sheet-tabs");
+        meta.sheetNames.forEach(name => {
+          const btn = document.createElement("button");
+          btn.textContent = name;
+          btn.onclick = () => {
+            document.querySelectorAll("#sheet-tabs button").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            console.log("選択シート:", name);
+          };
+          sheetTabs.appendChild(btn);
+        });
+
+        // 会場名タブ
+        const roomTabs = document.getElementById("room-tabs");
+        meta.roomNames.forEach(room => {
+          const btn = document.createElement("button");
+          btn.textContent = room;
+          btn.onclick = () => {
+            btn.classList.toggle("active"); // 複数選択OK
+            console.log("選択会場:", room);
+          };
+          roomTabs.appendChild(btn);
+        });
+
+        // ヘッダータブ（仮：rooms固定）
+        const headerTabs = document.getElementById("header-tabs");
+        if (meta.headersMap["rooms"]) {
+          meta.headersMap["rooms"].forEach(header => {
+            const btn = document.createElement("button");
+            btn.textContent = header;
+            btn.onclick = () => {
+              btn.classList.toggle("active"); // 複数選択OK
+              console.log("選択項目:", header);
+            };
+            headerTabs.appendChild(btn);
+          });
+        }
+
+      } catch (err) {
+        console.error("取得失敗", err);
+      }
+    }
+
+    initMetaTabs();
+  </script>
   <script src="script.js"></script>
 </body>
 </html>

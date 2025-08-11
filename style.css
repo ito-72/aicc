@@ -3,6 +3,7 @@ body {
   background-color: #f2f2f2;
   margin: 0;
   padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top)); /* ← 追加 */
   text-align: center;
   color: #333;
 }

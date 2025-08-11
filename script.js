@@ -1,40 +1,16 @@
 let quizData = null;
 let quizList = [];
-let userAnswers = [];
+let currentIndex = 0;
 let correctCount = 0;
+let selectedIndex = null;
 
+// 正解数に応じたコメント
 const comments = [
   { range: [0, 3], messages: ["次はもっと頑張ろう！", "ドンマイ！", "チャレンジあるのみ！"] },
   { range: [4, 6], messages: ["あと少し！", "惜しい！", "いい線いってる！"] },
   { range: [7, 9], messages: ["お見事！", "素晴らしい！", "もうちょっとで満点！"] },
   { range: [10, 10], messages: ["満点！すごい！", "完璧！", "天才！"] }
 ];
-
-// 同じジャンルで再出題
-function resetSameQuiz() {
-  userAnswers = [];
-  correctCount = 0;
-  generateQuizList();
-  renderAllQuizzes();
-  document.getElementById("score").textContent = "";
-  document.getElementById("check-score").style.display = "inline-block";
-
-  // 一番上にスクロール
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// 最初の画面に戻る
-function goBackToStart() {
-  document.getElementById("quiz-container").style.display = "none";
-  document.getElementById("check-score").style.display = "none";
-  document.getElementById("score").textContent = "";
-  document.getElementById("start-button").style.display = "inline-block";
-  document.getElementById("start-button").textContent = "問題を作成する";
-  document.getElementById("start-button").disabled = false;
-
-  // 一番上にスクロール
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 document.getElementById("start-button").onclick = async () => {
   const startBtn = document.getElementById("start-button");
@@ -46,12 +22,15 @@ document.getElementById("start-button").onclick = async () => {
     const data = await res.json();
     quizData = data;
     generateQuizList();
-    renderAllQuizzes();
+    currentIndex = 0;
+    correctCount = 0;
     startBtn.style.display = "none";
-    document.getElementById("quiz-container").style.display = "block";
-    document.getElementById("check-score").style.display = "inline-block";
+    document.getElementById("question").style.display = "block";
+    document.getElementById("answer").style.display = "inline-block";
+    showQuiz();
   } catch (e) {
-    console.error("データの取得に失敗しました。", e);
+    document.getElementById("question").textContent = "データの取得に失敗しました。";
+    console.error(e);
   }
 };
 
@@ -76,96 +55,74 @@ function generateQuizList() {
     const answerIndex = choices.indexOf(correctAnswer);
 
     quizList.push({ questionText, choices, answerIndex });
-    userAnswers.push(null);
   }
 }
 
-function renderAllQuizzes() {
-  const container = document.getElementById("quiz-container");
-  container.innerHTML = "";
+function showQuiz() {
+  const quiz = quizList[currentIndex];
+  selectedIndex = null;
 
-  quizList.forEach((quiz, qIndex) => {
-    const block = document.createElement("div");
-    block.className = "quiz-block";
+  document.getElementById("result").textContent = "";
+  document.getElementById("question").textContent = `第${currentIndex + 1}問：${quiz.questionText}`;
 
-    const qText = document.createElement("div");
-    qText.className = "quiz-question";
-    qText.textContent = `第${qIndex + 1}問：${quiz.questionText}`;
-    block.appendChild(qText);
+  const choicesDiv = document.getElementById("choices");
+  choicesDiv.innerHTML = "";
 
-    const choicesDiv = document.createElement("div");
-    choicesDiv.className = "choices";
-
-    quiz.choices.forEach((choice, cIndex) => {
-      const btn = document.createElement("button");
-      btn.textContent = `${choice}`;
-      btn.className = "choice-button";
-      btn.onclick = () => {
-        if (userAnswers[qIndex] !== null) return;
-
-        userAnswers[qIndex] = cIndex;
-
-        choicesDiv.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-
-        const result = block.querySelector(".result");
-        if (cIndex === quiz.answerIndex) {
-          result.textContent = "✅ 正解！";
-          result.style.color = "green";
-        } else {
-          result.textContent = `❌ 不正解。正解は「${quiz.choices[quiz.answerIndex]}」`;
-          result.style.color = "red";
-        }
-      };
-      choicesDiv.appendChild(btn);
-    });
-
-    block.appendChild(choicesDiv);
-
-    const resultDiv = document.createElement("div");
-    resultDiv.className = "result";
-    block.appendChild(resultDiv);
-
-    container.appendChild(block);
+  quiz.choices.forEach((choice, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = `${choice}`;
+    btn.className = "choice-button";
+    btn.onclick = () => {
+      selectedIndex = index;
+      document.querySelectorAll(".choice-button").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    };
+    choicesDiv.appendChild(btn);
   });
 }
 
-document.getElementById("check-score").onclick = () => {
-  correctCount = 0;
-  userAnswers.forEach((answer, index) => {
-    if (answer === quizList[index].answerIndex) {
-      correctCount++;
-    }
-  });
+document.getElementById("answer").onclick = () => {
+  const quiz = quizList[currentIndex];
+  const resultDiv = document.getElementById("result");
 
-  const comment = getComment(correctCount);
+  if (selectedIndex === null) {
+    resultDiv.textContent = "選択肢を選んでください。";
+    resultDiv.style.color = "black";
+    return;
+  }
+
+  if (selectedIndex === quiz.answerIndex) {
+    resultDiv.textContent = "✅ 正解！";
+    resultDiv.style.color = "green";
+    correctCount++;
+  } else {
+    resultDiv.textContent = `❌ 不正解。正解は「${quiz.choices[quiz.answerIndex]}」`;
+    resultDiv.style.color = "red";
+  }
+
+  currentIndex++;
+
+  if (currentIndex < quizList.length) {
+    setTimeout(showQuiz, 1000); // 次の問題へ
+  } else {
+    document.getElementById("answer").style.display = "none";
+    document.getElementById("check-score").style.display = "inline-block";
+  }
+};
+
+document.getElementById("check-score").onclick = () => {
   const scoreDiv = document.getElementById("score");
+  const comment = getComment(correctCount);
   scoreDiv.textContent = `✅ ${correctCount} / ${quizList.length} 正解！\n${comment}`;
   document.getElementById("check-score").style.display = "none";
-
-  // ボタン追加
-  const retryBtn = document.createElement("button");
-  retryBtn.textContent = "もう一度";
-  retryBtn.className = "action-button";
-  retryBtn.onclick = resetSameQuiz;
-
-  const otherQuizBtn = document.createElement("button");
-  otherQuizBtn.textContent = "別のクイズ";
-  otherQuizBtn.className = "action-button";
-  otherQuizBtn.style.marginLeft = "8px";
-  otherQuizBtn.onclick = goBackToStart;
-
-  scoreDiv.appendChild(document.createElement("div"));
-  scoreDiv.appendChild(retryBtn);
-  scoreDiv.appendChild(otherQuizBtn);
 };
 
 function getComment(score) {
   for (const group of comments) {
     const [min, max] = group.range;
     if (score >= min && score <= max) {
-      const messages = group.messages;
-      return messages[Math.floor(Math.random() * messages.length)];
+      const randomIndex = Math.floor(Math.random() * group.messages.length);
+      return group.messages[randomIndex];
     }
   }
   return "";

@@ -25,18 +25,42 @@
 </head>
 
 <body>
-<div class="select-wrapper">
-  <label for="sheet-select" class="select-label">クイズのテーマを選ぶ</label>
-  <select id="sheet-select" class="styled-select">
-    <option value="rooms">会場情報（rooms）</option>
-    <option value="price">料金情報（price）</option>
-    <option value="layout">レイアウト情報（layout）</option>
-  </select>
-</div>
+  <h1>会議室クイズ</h1>
 
+  <!-- 階層1: シート選択タブ -->
+  <div class="tab-group" id="sheet-tabs">
+    <button data-sheet="rooms" class="tab">会場情報</button>
+    <button data-sheet="price" class="tab">料金情報</button>
+    <button data-sheet="layout" class="tab">レイアウト情報</button>
+  </div>
 
+  <!-- 階層2: 項目選択タブ（JSで生成） -->
+  <div class="tab-group" id="header-tabs">
+    <!-- JSで動的に追加 -->
+  </div>
+
+  <!-- 階層3: 会場選択タブ（JSで生成） -->
+  <div class="tab-group" id="room-tabs">
+    <!-- JSで動的に追加 -->
+  </div>
+
+  <!-- 階層4: 問題数選択タブ -->
+  <div class="tab-group" id="quiz-count-tabs">
+    <button data-count="10" class="tab active">10問</button>
+    <button data-count="20" class="tab">20問</button>
+    <button data-count="30" class="tab">30問</button>
+  </div>
+
+  <!-- 階層5: 出題形式タブ -->
+  <div class="tab-group" id="quiz-mode-tabs">
+    <button data-mode="choice" class="tab active">選択</button>
+    <button data-mode="input" class="tab">記述</button>
+  </div>
+
+  <!-- スタートボタン -->
   <button id="start-button">問題を作成する</button>
 
+  <!-- クイズ本体 -->
   <div id="quiz-container" style="display:none;"></div>
 
   <button id="check-score" style="display:none;">正解数は？</button>

@@ -126,6 +126,14 @@ function getComment(score) {
   return "";
 }
 
+// 会場名を文字列化して比較するためのヘルパー
+function isRoomSelected(roomLabel) {
+  const name = String(roomLabel).trim();
+  const set = new Set(selectedRooms.map(v => String(v).trim()));
+  return set.has(name);
+}
+
+
 // ====== タブ初期化 ======
 function initSheetTabs() {
   const sheetTabs = document.querySelectorAll("#sheet-tabs .tab");
@@ -360,7 +368,7 @@ function generateQuizList() {
   quizData.forEach(({ sheet, headers, rows }) => {
     rows.forEach(row => {
       // 会場フィルタ
-      if (selectedRooms.length && !selectedRooms.includes(row[0])) return;
+      if (selectedRooms.length && !isRoomSelected(row[0])) return;
 
       headers.forEach((header, colIndex) => {
         if (colIndex === 0) return; // A列は会場名
@@ -618,7 +626,7 @@ function generateToolsQuiz() {
   if (!tools) return;
 
   const { headers, rows } = tools;
-  const targetRows = selectedRooms.length ? rows.filter(r => selectedRooms.includes(r[0])) : rows;
+  const targetRows = selectedRooms.length ? rows.filter(r => isRoomSelected(r[0])) : rows;
   const tmpList = [];
 
   // 1) ワイヤレスハンドマイク（D列固定）

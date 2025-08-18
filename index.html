@@ -14,44 +14,49 @@
 
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600&family=Roboto+Slab:wght@600&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      font-family: 'M PLUS Rounded 1c', sans-serif;
-    }
-  </style>
 </head>
 
 <body>
-  <h1>会議室クイズ</h1>
+  <!-- 左上ロゴ -->
+  <div id="logo-bar">
+    <span id="logo-text">AICC</span>
+  </div>
 
-  <!-- 階層1: シート選択タブ -->
+ <h1 class="app-title">AICC Quiz</h1>
+
+
+  <!-- 階層1 -->
+  <h2 class="section-title">カテゴリ</h2>
   <div class="tab-group" id="sheet-tabs">
     <button data-sheet="rooms" class="tab">会場情報</button>
     <button data-sheet="price" class="tab">料金情報</button>
     <button data-sheet="layout" class="tab">レイアウト情報</button>
+    <button data-sheet="tools" class="tab">無料付帯</button>
+    <button data-sheet="fee_tools" class="tab">有料備品</button>
+    <button data-sheet="access" class="tab">アクセス</button>
   </div>
 
-  <!-- 階層2: 項目選択タブ（JSで生成） -->
-  <div class="tab-group" id="header-tabs">
-    <!-- JSで動的に追加 -->
-  </div>
+  <!-- 階層2 -->
+  <h2 class="section-title">項目</h2>
+  <div class="tab-group" id="header-tabs"></div>
 
-  <!-- 階層3: 会場選択タブ（JSで生成） -->
-  <div class="tab-group" id="room-tabs">
-    <!-- JSで動的に追加 -->
-  </div>
+  <!-- 階層3 -->
+  <h2 class="section-title">会場</h2>
+  <div class="tab-group" id="room-tabs"></div>
 
-  <!-- 階層4: 問題数選択タブ -->
+  <!-- 階層4 -->
+  <h2 class="section-title">出題数</h2>
   <div class="tab-group" id="quiz-count-tabs">
     <button data-count="10" class="tab active">10問</button>
     <button data-count="20" class="tab">20問</button>
     <button data-count="30" class="tab">30問</button>
   </div>
 
-  <!-- 階層5: 出題形式タブ -->
+  <!-- 階層5 -->
+  <h2 class="section-title">回答形式</h2>
   <div class="tab-group" id="quiz-mode-tabs">
     <button data-mode="choice" class="tab active">選択</button>
     <button data-mode="input" class="tab">記述</button>
@@ -66,7 +71,45 @@
   <button id="check-score" style="display:none;">正解数は？</button>
   <div id="score"></div>
 
+  <!-- 画像ビュー -->
+  <div id="image-viewer" style="display:none;">
+    <div id="image-header">
+      <button id="back-button">←</button>
+    </div>
+    <img src="2.png" alt="Price List" />
+  </div>
+
   <script src="config.js"></script>
   <script src="script.js"></script>
+  <script>
+    const logo = document.getElementById("logo-text");
+    const viewer = document.getElementById("image-viewer");
+    const backBtn = document.getElementById("back-button");
+
+    // AICCクリックで画像ビュー表示
+    logo.onclick = () => {
+      document.body.querySelectorAll("h1, h2, .tab-group, #start-button, #quiz-container, #check-score, #score")
+        .forEach(el => el.style.display = "none");
+      viewer.classList.add("active");
+      viewer.classList.remove("closing");
+      viewer.style.display = "flex";
+    };
+
+    // 戻るボタンでクイズUI復活
+    backBtn.onclick = () => {
+      viewer.classList.add("closing");
+      viewer.classList.remove("active");
+
+      // アニメーションが終わったら非表示にする
+      viewer.addEventListener("transitionend", function handler() {
+        if (viewer.classList.contains("closing")) {
+          viewer.style.display = "none";
+          document.body.querySelectorAll("h1, h2, .tab-group, #start-button, #quiz-container, #check-score, #score")
+            .forEach(el => el.style.display = "");
+        }
+        viewer.removeEventListener("transitionend", handler);
+      });
+    };
+  </script>
 </body>
 </html>

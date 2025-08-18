@@ -1,0 +1,17 @@
+function doGet(e) {
+  // URLパラメータから sheet を取得。指定がなければ rooms
+  const sheetName = e && e.parameter && e.parameter.sheet ? e.parameter.sheet : "rooms";
+
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if (!sheet) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ error: `シート "${sheetName}" が見つかりません` }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const data = sheet.getDataRange().getValues(); // 見出し行を含む全データ
+
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}

@@ -158,17 +158,20 @@ body {
   border-color: #2196F3;
 }
 
-/* ====== 左上ロゴ（ブランド風） ====== */
+/* ====== 左上ロゴ → 右下配置 ====== */
 #logo-bar {
   position: fixed;
-  top: 0;
-  left: 0;
+  bottom: 0;      /* 下端に固定 */
+  right: 0;       /* 右端に固定 */
+  top: auto;      /* 上固定は解除 */
+  left: auto;     /* 左固定も解除 */
   padding: 10px 18px;
   font-size: 1.4rem;
   font-weight: bold;
   color: #fff;
-  border-bottom-right-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  border-top-left-radius: 12px;   /* 右下用に角を調整 */
+  border-bottom-right-radius: 0;  /* 左上用の角丸はオフ */
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.2);
   cursor: pointer;
   z-index: 1500;
   letter-spacing: 1px;
@@ -180,6 +183,7 @@ body {
   backdrop-filter: blur(3px);
   transition: background 0.2s ease;
 }
+
 
 #logo-bar:hover {
   background: linear-gradient(to right, rgba(25,118,210,0.9), rgba(0,0,0,0.5)),

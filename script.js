@@ -20,6 +20,13 @@ const comments = [
   { range: [10, 10], messages: ["満点！すごい！", "完璧！", "天才！"] }
 ];
 
+// ====== 会場グループ定義（存在する部屋だけを自動採用） ======
+const ROOM_GROUPS = {
+  "3階": ["301", "302", "303", "Boardroom", "Board前室"],
+  "200㎡まで": ["301", "302", "303", "Boardroom", "Board前室", "401", "402", "403", "404", "405", "the Green"],
+  "全て": "ALL"
+};
+
 // ====== 初期化 ======
 window.addEventListener("DOMContentLoaded", () => {
   // アコーディオン（見出しクリックで開閉）
@@ -27,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // タブ群
   initSheetTabs();      // 階層1
-  initRoomTabs();       // 階層3
+  initRoomTabs();       // 階層3（グループボタン含む）
   initQuizCountTabs();  // 階層4
   initQuizModeTabs();   // 階層5
 
@@ -140,9 +147,8 @@ function initSheetTabs() {
         }
       }
 
-      // サマリー更新（カテゴリ）
+      // サマリー更新（カテゴリ／項目）
       setSummaryText("sheet-tabs", getSelectedSheetLabels());
-      // サマリー更新（項目）
       setSummaryText("header-tabs", getSelectedHeaderLabels());
     });
   });
@@ -185,20 +191,49 @@ async function loadHeadersForSheet(sheetName) {
   }
 }
 
+// ====== 会場（グループボタン付き） ======
 async function initRoomTabs() {
   try {
     const res = await fetch(`${CONFIG.GAS_URL}?sheet=rooms`);
     const data = await res.json();
     const rows = data.slice(1);
-    const roomNames = rows.map(r => r[0]).filter(v => v !== "");
+
+    // ★ここを修正：必ず String 化してから trim
+    const roomNames = rows
+      .map(r => String(r[0]).trim())
+      .filter(v => v !== "");
 
     const container = document.getElementById("room-tabs");
     container.innerHTML = "";
+
+    // --- グループ選択ボタン（先頭に表示） ---
+    const groups = ["3階", "200㎡まで", "全て"];
+    groups.forEach(label => {
+      const gbtn = document.createElement("button");
+      gbtn.className = "tab";
+      gbtn.textContent = label;
+      gbtn.dataset.group = label;
+      gbtn.addEventListener("click", () => {
+        if (ROOM_GROUPS[label] === "ALL") {
+          // 全て
+          selectedRooms = [...roomNames];
+        } else {
+          // ★ここも String 比較（roomNames はすでに String 正規化済）
+          const allowed = ROOM_GROUPS[label];
+          selectedRooms = allowed.filter(n => roomNames.includes(String(n).trim()));
+        }
+        updateRoomButtons(container, roomNames);
+        setSummaryText("room-tabs", selectedRooms);
+      });
+      container.appendChild(gbtn);
+    });
+
+    // --- 実際の会場ボタン（data-room にも String を入れる） ---
     roomNames.forEach(room => {
       const btn = document.createElement("button");
       btn.className = "tab";
       btn.textContent = room;
-      btn.dataset.room = room;
+      btn.dataset.room = room; // 文字列
       btn.addEventListener("click", () => {
         if (selectedRooms.includes(room)) {
           selectedRooms = selectedRooms.filter(r => r !== room);
@@ -207,16 +242,34 @@ async function initRoomTabs() {
           selectedRooms.push(room);
           btn.classList.add("active");
         }
-        // サマリー更新（会場）
         setSummaryText("room-tabs", selectedRooms);
       });
       container.appendChild(btn);
     });
+
+    updateRoomButtons(container, roomNames);
   } catch (e) {
     console.error("会場データ取得に失敗しました", e);
   }
 }
 
+
+// 会場ボタンの active 反映
+function updateRoomButtons(container, roomNames) {
+  // いったん全消し
+  container.querySelectorAll('button[data-room]').forEach(b => b.classList.remove("active"));
+
+  // ★selectedRooms も String 正規化して比較
+  const selectedSet = new Set(selectedRooms.map(s => String(s).trim()));
+
+  container.querySelectorAll('button[data-room]').forEach(b => {
+    const name = String(b.dataset.room).trim();
+    if (selectedSet.has(name)) b.classList.add("active");
+  });
+}
+
+
+// ====== 出題数 ======
 function initQuizCountTabs() {
   const countTabs = document.querySelectorAll("#quiz-count-tabs .tab");
   countTabs.forEach(tab => {
@@ -224,12 +277,12 @@ function initQuizCountTabs() {
       countTabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
       quizCount = parseInt(tab.dataset.count, 10);
-      // サマリー更新（出題数）
       setSummaryText("quiz-count-tabs", [`${quizCount}問`]);
     });
   });
 }
 
+// ====== 出題形式 ======
 function initQuizModeTabs() {
   const modeTabs = document.querySelectorAll("#quiz-mode-tabs .tab");
   modeTabs.forEach(tab => {
@@ -237,7 +290,6 @@ function initQuizModeTabs() {
       modeTabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
       quizMode = tab.dataset.mode; // "choice" or "input"
-      // サマリー更新（回答形式）
       setSummaryText("quiz-mode-tabs", [quizMode === "choice" ? "選択" : "記述"]);
     });
   });
@@ -690,20 +742,15 @@ function generateToolsQuiz() {
   userAnswers = new Array(quizList.length).fill(null);
 }
 
-// ====== 有料備品（fee_tools）：表示フォーマットなど補助 ======
+// ====== 有料備品（fee_tools） ======
 function formatDisplayForFeeTools(colIndex, v) {
   const num = toNumeric(v);
   if (num === null) return String(v);
   if (colIndex === 1) return `¥${num.toLocaleString("ja-JP")}`; // B列のみ¥
   return String(num);
 }
-
-// 既存実装を流用・拡張する前提（※本文はプロジェクトの元実装に合わせてください）
 function generateFeeToolsQuiz() {
-  // 必要に応じてあなたの既存 fee_tools ロジックをここへ貼り付け
-  // この雛形では未展開（既存を優先）
   const candidates = [];
-
   const fee = quizData.find(q => q.sheet === "fee_tools");
   if (!fee) {
     quizList = [];
@@ -720,7 +767,6 @@ function generateFeeToolsQuiz() {
     if (headers[1] && row[1] !== "" && row[1] !== null && row[1] !== undefined) {
       const correctRaw = row[1];
       const correctNum = toNumeric(correctRaw);
-      // 同列の他値収集
       const otherValues = rows.map(r => r[1]).filter(v => v !== "" && v !== null && v !== undefined && String(v) !== String(correctRaw));
       let wrongs = [...new Set(otherValues)];
 

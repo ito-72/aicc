@@ -990,3 +990,24 @@ document.getElementById("check-score").onclick = () => {
   scoreDiv.appendChild(retryBtn);
   scoreDiv.appendChild(otherQuizBtn);
 };
+
+// ====== ロゴクリックで写真ビュー表示 ======
+const logoBar = document.getElementById("logo-bar");
+const imageViewer = document.getElementById("image-viewer");
+const backButton = document.getElementById("back-button");
+
+if (logoBar && imageViewer && backButton) {
+  logoBar.addEventListener("click", () => {
+    imageViewer.classList.add("active");
+    imageViewer.style.display = "flex";
+  });
+
+  backButton.addEventListener("click", () => {
+    // アニメーションで閉じる
+    imageViewer.classList.add("closing");
+    setTimeout(() => {
+      imageViewer.classList.remove("active", "closing");
+      imageViewer.style.display = "none";
+    }, 350);
+  });
+}

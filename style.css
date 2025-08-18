@@ -178,15 +178,12 @@ body {
   font-family: 'Roboto Slab', 'Noto Sans JP', sans-serif;
 
   /* ▼ 写真背景を合成 */
-  background: linear-gradient(to right, rgba(33,150,243,0.85), rgba(0,0,0,0.5)),
+  background: linear-gradient(to left, rgba(33,150,243,0.85), rgba(0,0,0,0.5)),
               url("1.jpg") center/cover no-repeat;
-  backdrop-filter: blur(3px);
-  transition: background 0.2s ease;
-}
-
+            }
 
 #logo-bar:hover {
-  background: linear-gradient(to right, rgba(25,118,210,0.9), rgba(0,0,0,0.5)),
+  background: linear-gradient(to left, rgba(25,118,210,0.9), rgba(0,0,0,0.5)),
               url("1.jpg") center/cover no-repeat;
 }
 

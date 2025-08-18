@@ -274,3 +274,20 @@ body {
   filter: blur(3px) brightness(0.65);  /* ブラー弱め＆暗めで文字を映えさせる */
   z-index: -1;
 }
+
+.section-title {
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.section-title .selected-summary {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.section-title.open {
+  color: #1976D2;
+}

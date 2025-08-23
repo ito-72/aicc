@@ -288,3 +288,61 @@ body {
 .section-title.open {
   color: #1976D2;
 }
+
+/* ====== トースト通知（読み込み中） ====== */
+#loading.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(33,150,243,0.95);
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  z-index: 3000;
+  animation: fadeIn 0.3s ease;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 3px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, 20px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ====== ピンチズーム用 ====== */
+#pinch-stage {
+  position: relative;
+  width: 100%;
+  height: calc(100% - 56px); /* 上部ヘッダー/戻るボタン分を避けるなら調整 */
+  overflow: hidden;          /* はみ出しを隠す */
+  touch-action: none;        /* ブラウザ既定のジェスチャを抑止（iOSは一部制限あり） */
+}
+
+#pinch-img {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: 50% 50%;
+  will-change: transform;
+  user-select: none;
+  -webkit-user-drag: none;
+  max-width: none;   /* 画像側の制約を外し、transformで制御 */
+  max-height: none;
+}

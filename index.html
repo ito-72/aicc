@@ -20,9 +20,15 @@
 </head>
 
 <body>
-  <!-- 左下ロゴ -->
+  <!-- 右下ロゴ -->
   <div id="logo-bar">
     <span id="logo-text">AICC</span>
+  </div>
+
+  <!-- ▼ トースト（読み込み中） -->
+  <div id="loading" class="toast" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
+    <div class="spinner" aria-hidden="true"></div>
+    <span>読み込み中...</span>
   </div>
 
   <h1 class="app-title">AICC Quiz</h1>
@@ -85,10 +91,17 @@
     <div id="image-header">
       <button id="back-button">←</button>
     </div>
-    <img src="2.png" alt="Price List" />
+    <!-- ▼ ピンチズーム用のラッパ -->
+    <div id="pinch-stage">
+      <img id="pinch-img" src="2.png" alt="Price List" />
+    </div>
   </div>
 
   <script src="config.js"></script>
-  <script src="script.js"></script>
+  <script src="state.js"></script>
+  <script src="ui.js"></script>
+  <script src="quiz.js"></script>
+  <script src="main.js"></script>
+
 </body>
 </html>

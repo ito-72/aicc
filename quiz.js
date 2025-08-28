@@ -295,7 +295,7 @@ function generateToolsQuiz() {
       if (answerIndex >= 0) {
         tmpList.push({
           type: "choice",
-          questionText: `${roomName} の ワイヤレスハンドマイクは？`,
+          questionText: `${roomName} の ワイヤレスハンドマイクの種類は？`,
           choicesRaw: choices,
           choicesDisplay: choices,
           answerIndex

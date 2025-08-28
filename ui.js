@@ -11,13 +11,19 @@ function initAccordions() {
     });
   });
 
-  // 初期状態はすべて閉じる（index.html で display:none 指定済み）
+  // 初期は閉じる
   document.querySelectorAll(".tab-group").forEach(g => {
     if (g.style.display === "") g.style.display = "none";
   });
+
+  // 使い勝手向上：最初はブランド/カテゴリを見せておく
+  const brandGrp = document.getElementById("brand-tabs");
+  const sheetGrp = document.getElementById("sheet-tabs");
+  if (brandGrp) brandGrp.style.display = "flex";
+  if (sheetGrp) sheetGrp.style.display = "flex";
 }
 
-// ====== サマリー表示ユーティリティ ======
+// ====== サマリー表示 ======
 function setSummaryText(sectionId, values) {
   const title = document.querySelector(`.section-title[data-target="${sectionId}"]`);
   if (!title) return;
@@ -33,6 +39,7 @@ function getSelectedSheetLabels() {
   });
   return labels;
 }
+
 function getSelectedHeaderLabels() {
   const list = [];
   Object.entries(selectedHeaders).forEach(([sheet, headers]) => {
@@ -40,7 +47,9 @@ function getSelectedHeaderLabels() {
   });
   return list;
 }
+
 function refreshAllSummaries() {
+  setSummaryText("brand-tabs", [brand]);
   setSummaryText("sheet-tabs", getSelectedSheetLabels());
   setSummaryText("header-tabs", getSelectedHeaderLabels());
   setSummaryText("room-tabs", selectedRooms);
@@ -48,12 +57,48 @@ function refreshAllSummaries() {
   setSummaryText("quiz-mode-tabs", [quizMode === "choice" ? "選択" : "記述"]);
 }
 
+// ====== ブランド切替（階層0） ======
+function initBrandTabs() {
+  const tabs = document.querySelectorAll('#brand-tabs .tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', async () => {
+      // タブ見た目
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      // 値更新
+      brand = tab.dataset.brand || 'AICC';
+
+      // UI & 選択状態リセット
+      updateBrandUI();
+      resetSelectionsForBrand();
+
+      // ブランド依存データの再取得（会場）
+      await initRoomTabs();
+
+      // サマリーを即時更新（タイトル右が変わらない問題への対処）
+      setSummaryText("brand-tabs", [brand]);
+      refreshAllSummaries();
+
+      // 切替後もカテゴリは見えているようにする
+      const sheetGrp = document.getElementById("sheet-tabs");
+      if (sheetGrp) sheetGrp.style.display = "flex";
+      const brandGrp = document.getElementById("brand-tabs");
+      if (brandGrp) brandGrp.style.display = "flex";
+    });
+  });
+}
+
 // ====== タブ初期化（カテゴリ/項目/会場/出題数/出題形式） ======
 function initSheetTabs() {
   const sheetTabs = document.querySelectorAll("#sheet-tabs .tab");
   sheetTabs.forEach(tab => {
+    // すでにハンドラが付いている場合の多重登録を回避
+    if (tab.dataset._bound === "1") return;
+    tab.dataset._bound = "1";
+
     tab.addEventListener("click", async () => {
-      const sheet = tab.dataset.sheet;
+      const sheet = tab.dataset.sheet; // rooms/price/layout/tools/fee_tools/access
 
       // toggle active
       if (selectedSheets.includes(sheet)) {
@@ -63,50 +108,52 @@ function initSheetTabs() {
       } else {
         selectedSheets.push(sheet);
         tab.classList.add("active");
-        // toolsは項目タブ不要。それ以外はヘッダーをロード
+        // toolsは項目タブ不要。それ以外はヘッダー読み込み
         if (sheet !== "tools") {
           await loadHeadersForSheet(sheet);
+          // ヘッダーのコンテナを開く
+          const headerGrp = document.getElementById("header-tabs");
+          if (headerGrp) headerGrp.style.display = "flex";
         }
       }
 
-      // サマリー更新（カテゴリ／項目）
       setSummaryText("sheet-tabs", getSelectedSheetLabels());
       setSummaryText("header-tabs", getSelectedHeaderLabels());
     });
   });
 }
 
-// ▼ ここをローディング表示対応
-async function loadHeadersForSheet(sheetName) {
+// ▼ ブランド別シート名でヘッダー読込
+async function loadHeadersForSheet(sheetKey) {
   const loadingEl = document.getElementById("loading");
   try {
-    if (loadingEl) loadingEl.style.display = "block";  // 表示
+    if (loadingEl) loadingEl.style.display = "block";
 
-    const res = await fetch(`${CONFIG.GAS_URL}?sheet=${encodeURIComponent(sheetName)}`);
+    const effective = resolveSheetName(sheetKey); // 例: TACC → T_rooms
+    const res = await fetch(`${CONFIG.GAS_URL}?sheet=${encodeURIComponent(effective)}`);
     const data = await res.json();
-    const headers = data[0].slice(1); // A列はラベル／会場名なのでB列以降
+    const headers = data[0].slice(1); // A列は会場名（見出し外す）
 
     const container = document.getElementById("header-tabs");
-    // 既存の同シート分を削除（重複生成防止）
-    Array.from(container.querySelectorAll(`button[data-sheet="${sheetName}"]`)).forEach(b => b.remove());
+    // 同一sheetKeyの古いボタンは削除
+    Array.from(container.querySelectorAll(`button[data-sheet="${sheetKey}"]`)).forEach(b => b.remove());
 
     headers.forEach(header => {
       const btn = document.createElement("button");
       btn.className = "tab";
       btn.textContent = header;
-      btn.dataset.sheet = sheetName;
+      btn.dataset.sheet = sheetKey; // ブランド非依存キー
       btn.dataset.header = header;
 
       btn.addEventListener("click", () => {
-        if (!selectedHeaders[sheetName]) selectedHeaders[sheetName] = [];
-        if (selectedHeaders[sheetName].includes(header)) {
-          selectedHeaders[sheetName] = selectedHeaders[sheetName].filter(h => h !== header);
+        if (!selectedHeaders[sheetKey]) selectedHeaders[sheetKey] = [];
+        if (selectedHeaders[sheetKey].includes(header)) {
+          selectedHeaders[sheetKey] = selectedHeaders[sheetKey].filter(h => h !== header);
           btn.classList.remove("active");
         } else {
-          selectedHeaders[sheetName].push(header);
+          selectedHeaders[sheetKey].push(header);
           btn.classList.add("active");
         }
-        // サマリー更新（項目）
         setSummaryText("header-tabs", getSelectedHeaderLabels());
       });
 
@@ -115,17 +162,17 @@ async function loadHeadersForSheet(sheetName) {
   } catch (e) {
     console.error("ヘッダー取得に失敗", e);
   } finally {
-    if (loadingEl) loadingEl.style.display = "none";  // 非表示
+    if (loadingEl) loadingEl.style.display = "none";
   }
 }
 
 async function initRoomTabs() {
   try {
-    const res = await fetch(`${CONFIG.GAS_URL}?sheet=rooms`);
+    const effectiveRooms = resolveSheetName('rooms');
+    const res = await fetch(`${CONFIG.GAS_URL}?sheet=${encodeURIComponent(effectiveRooms)}`);
     const data = await res.json();
     const rows = data.slice(1);
 
-    // ★必ず String 化してから trim
     const roomNames = rows
       .map(r => String(r[0]).trim())
       .filter(v => v !== "");
@@ -133,7 +180,7 @@ async function initRoomTabs() {
     const container = document.getElementById("room-tabs");
     container.innerHTML = "";
 
-    // --- グループ選択ボタン（先頭に表示） ---
+    // グループボタン
     const groups = ["3階", "200㎡まで", "全て"];
     groups.forEach(label => {
       const gbtn = document.createElement("button");
@@ -142,10 +189,8 @@ async function initRoomTabs() {
       gbtn.dataset.group = label;
       gbtn.addEventListener("click", () => {
         if (ROOM_GROUPS[label] === "ALL") {
-          // 全て
           selectedRooms = [...roomNames];
         } else {
-          // ★String 比較（roomNames は正規化済）
           const allowed = ROOM_GROUPS[label];
           selectedRooms = allowed.filter(n => roomNames.includes(String(n).trim()));
         }
@@ -155,12 +200,12 @@ async function initRoomTabs() {
       container.appendChild(gbtn);
     });
 
-    // --- 実際の会場ボタン（data-room にも String を入れる） ---
+    // 会場ボタン
     roomNames.forEach(room => {
       const btn = document.createElement("button");
       btn.className = "tab";
       btn.textContent = room;
-      btn.dataset.room = room; // 文字列
+      btn.dataset.room = room;
       btn.addEventListener("click", () => {
         if (selectedRooms.includes(room)) {
           selectedRooms = selectedRooms.filter(r => r !== room);
@@ -175,18 +220,18 @@ async function initRoomTabs() {
     });
 
     updateRoomButtons(container, roomNames);
+
+    // 切替後も会場タブを見えるように
+    const roomGrp = document.getElementById("room-tabs");
+    if (roomGrp) roomGrp.style.display = "flex";
   } catch (e) {
     console.error("会場データ取得に失敗しました", e);
   }
 }
 
 function updateRoomButtons(container, roomNames) {
-  // いったん全消し
   container.querySelectorAll('button[data-room]').forEach(b => b.classList.remove("active"));
-
-  // ★selectedRooms も String 正規化して比較
   const selectedSet = new Set(selectedRooms.map(s => String(s).trim()));
-
   container.querySelectorAll('button[data-room]').forEach(b => {
     const name = String(b.dataset.room).trim();
     if (selectedSet.has(name)) b.classList.add("active");
@@ -196,6 +241,9 @@ function updateRoomButtons(container, roomNames) {
 function initQuizCountTabs() {
   const countTabs = document.querySelectorAll("#quiz-count-tabs .tab");
   countTabs.forEach(tab => {
+    if (tab.dataset._bound === "1") return;
+    tab.dataset._bound = "1";
+
     tab.addEventListener("click", () => {
       countTabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
@@ -208,11 +256,26 @@ function initQuizCountTabs() {
 function initQuizModeTabs() {
   const modeTabs = document.querySelectorAll("#quiz-mode-tabs .tab");
   modeTabs.forEach(tab => {
+    if (tab.dataset._bound === "1") return;
+    tab.dataset._bound = "1";
+
     tab.addEventListener("click", () => {
       modeTabs.forEach(t => t.classList.remove("active"));
       tab.classList.add("active");
-      quizMode = tab.dataset.mode; // "choice" or "input"
+      quizMode = tab.dataset.mode; // "choice" | "input"
       setSummaryText("quiz-mode-tabs", [quizMode === "choice" ? "選択" : "記述"]);
     });
   });
 }
+
+// ====== 初期化 ======
+window.addEventListener('DOMContentLoaded', () => {
+  initAccordions();
+  initBrandTabs();       // 階層0
+  initSheetTabs();       // 階層1（イベント一度だけ束ねる）
+  initRoomTabs();        // 階層3（ブランド依存で毎回取得）
+  initQuizCountTabs();   // 階層4
+  initQuizModeTabs();    // 階層5
+  updateBrandUI();
+  refreshAllSummaries();
+});

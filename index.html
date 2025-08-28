@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -18,25 +17,32 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-  <!-- 右下ロゴ -->
+  <!-- 右下ロゴ（ブランド名はJSで更新） -->
   <div id="logo-bar">
     <span id="logo-text">AICC</span>
   </div>
 
-  <!-- ▼ トースト（読み込み中） -->
+  <!-- トースト：読み込み中 -->
   <div id="loading" class="toast" role="status" aria-live="polite" aria-atomic="true" style="display:none;">
     <div class="spinner" aria-hidden="true"></div>
     <span>読み込み中...</span>
   </div>
 
-  <h1 class="app-title">AICC Quiz</h1>
+  <!-- タイトル（ブランド名で変わる） -->
+  <h1 class="app-title"><span id="brand-title">AICC</span> Quiz</h1>
+<div id="brand-hero" aria-hidden="true"></div>
 
-  <!-- 階層1 -->
-  <h2 class="section-title" data-target="sheet-tabs">
-    カテゴリ <span class="selected-summary"></span>
-  </h2>
+
+  <!-- 階層0：ブランド -->
+  <h2 class="section-title" data-target="brand-tabs">ブランド <span class="selected-summary"></span></h2>
+  <div class="tab-group" id="brand-tabs" style="display:none;">
+    <button data-brand="AICC" class="tab active">AICC</button>
+    <button data-brand="TACC" class="tab">TACC</button>
+  </div>
+
+  <!-- 階層1：カテゴリ -->
+  <h2 class="section-title" data-target="sheet-tabs">カテゴリ <span class="selected-summary"></span></h2>
   <div class="tab-group" id="sheet-tabs" style="display:none;">
     <button data-sheet="rooms" class="tab">会場情報</button>
     <button data-sheet="price" class="tab">料金情報</button>
@@ -46,38 +52,30 @@
     <button data-sheet="access" class="tab">アクセス</button>
   </div>
 
-  <!-- 階層2 -->
-  <h2 class="section-title" data-target="header-tabs">
-    項目 <span class="selected-summary"></span>
-  </h2>
+  <!-- 階層2：項目 -->
+  <h2 class="section-title" data-target="header-tabs">項目 <span class="selected-summary"></span></h2>
   <div class="tab-group" id="header-tabs" style="display:none;"></div>
 
-  <!-- 階層3 -->
-  <h2 class="section-title" data-target="room-tabs">
-    会場 <span class="selected-summary"></span>
-  </h2>
+  <!-- 階層3：会場 -->
+  <h2 class="section-title" data-target="room-tabs">会場 <span class="selected-summary"></span></h2>
   <div class="tab-group" id="room-tabs" style="display:none;"></div>
 
-  <!-- 階層4 -->
-  <h2 class="section-title" data-target="quiz-count-tabs">
-    出題数 <span class="selected-summary"></span>
-  </h2>
+  <!-- 階層4：出題数 -->
+  <h2 class="section-title" data-target="quiz-count-tabs">出題数 <span class="selected-summary"></span></h2>
   <div class="tab-group" id="quiz-count-tabs" style="display:none;">
     <button data-count="10" class="tab active">10問</button>
     <button data-count="20" class="tab">20問</button>
     <button data-count="30" class="tab">30問</button>
   </div>
 
-  <!-- 階層5 -->
-  <h2 class="section-title" data-target="quiz-mode-tabs">
-    回答形式 <span class="selected-summary"></span>
-  </h2>
+  <!-- 階層5：回答形式 -->
+  <h2 class="section-title" data-target="quiz-mode-tabs">回答形式 <span class="selected-summary"></span></h2>
   <div class="tab-group" id="quiz-mode-tabs" style="display:none;">
     <button data-mode="choice" class="tab active">選択</button>
     <button data-mode="input" class="tab">記述</button>
   </div>
 
-  <!-- スタートボタン -->
+  <!-- スタート -->
   <button id="start-button">問題を作成する</button>
 
   <!-- クイズ本体 -->
@@ -86,15 +84,12 @@
   <button id="check-score" style="display:none;">正解数は？</button>
   <div id="score"></div>
 
-  <!-- 画像ビュー -->
+  <!-- 画像ビュー（価格表など） -->
   <div id="image-viewer" style="display:none;">
     <div id="image-header">
       <button id="back-button">←</button>
     </div>
-    <!-- ▼ ピンチズーム用のラッパ -->
-    <div id="pinch-stage">
-      <img id="pinch-img" src="2.png" alt="Price List" />
-    </div>
+    <img src="2.png" alt="Price List" />
   </div>
 
   <script src="config.js"></script>
@@ -102,6 +97,5 @@
   <script src="ui.js"></script>
   <script src="quiz.js"></script>
   <script src="main.js"></script>
-
 </body>
 </html>

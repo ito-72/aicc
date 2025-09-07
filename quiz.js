@@ -1,6 +1,14 @@
 // ====== 問題リスト生成（Access・tools・fee_tools 分岐を含む） ======
+//
+// 追加点：
+// - layout見出し（スクール/島/ロの字/シアター/立食）を記号化し、問題文の右に画像を表示
+// - 画像パスは /date/<会場名><記号>.png を encodeURIComponent で安全に参照
+//   例) "Room As" + "s" → /date/Room%20Ass.png
+//
+// 既存のユーティリティ（shuffleArray, toNumeric, formatDisplay など）は state.js 側に定義済み:contentReference[oaicite:2]{index=2}
+// 会場名は rows の A列（row[0]）を参照:contentReference[oaicite:3]{index=3}
 
-// ▼ 追加：layoutヘッダー文字列 → 画像用1文字コード
+// layout 見出し → 画像用記号
 function layoutKeyFromHeader(h) {
   const s = String(h || "");
   if (/スクール/.test(s)) return "s";
@@ -35,7 +43,7 @@ function generateQuizList() {
   const candidates = [];
   quizData.forEach(({ sheet, headers, rows }) => {
     rows.forEach(row => {
-      // 会場フィルタ
+      // 会場フィルタ（A列＝会場名）
       if (selectedRooms.length && !isRoomSelected(row[0])) return;
 
       headers.forEach((header, colIndex) => {
@@ -49,13 +57,13 @@ function generateQuizList() {
         const correctRaw = row[colIndex];
         if (correctRaw === "" || correctRaw === null || correctRaw === undefined) return;
 
-        // ▼ 追加：layoutのときは画像パスを組み立てる
+        // ▼ layout のときだけ画像パスを作る（列位置ではなく見出し文字で判定するので T_layout もOK）
         let imagePath = null;
         if (sheet === "layout") {
           const roomLabel = String(row[0]).trim();
           const code = layoutKeyFromHeader(header);
           if (roomLabel && code) {
-            imagePath = `date/${roomLabel}${code}.png`;
+            imagePath = `date/${encodeURIComponent(roomLabel + code)}.png`;
           }
         }
 
@@ -94,7 +102,6 @@ function generateQuizList() {
             choicesRaw,
             choicesDisplay,
             answerIndex,
-            // ▼ 追加：画像パスを保持
             imagePath
           });
         } else if (quizMode === "input") {
@@ -108,7 +115,6 @@ function generateQuizList() {
             questionText,
             correctNumber: correctNum,
             correctDisplay: formatDisplay(sheet, correctRaw),
-            // ▼ 追加：画像パスを保持
             imagePath
           });
         }
@@ -217,7 +223,7 @@ function generateAccessQuiz() {
       while (wrongs.length < 3 && k <= 6) {
         [correctNum - step * k, correctNum + step * k].forEach(v => {
           if (v > 0 && !wrongs.includes(v) && v !== correctNum && wrongs.length < 3) wrongs.push(v);
-          });
+        });
         k++;
       }
       const choicesRaw = shuffleArray([correctNum, ...wrongs.slice(0, 3)]);
@@ -502,9 +508,12 @@ function renderAllQuizzes() {
     const block = document.createElement("div");
     block.className = "quiz-block";
 
-    // ▼ 追加：問題文と画像を横並びに
+    // 問題文と画像を横並びに（CSSが無くても最低限の表示が崩れないよう軽くstyleを持たせる）
     const head = document.createElement("div");
     head.className = "quiz-head";
+    head.style.display = "flex";
+    head.style.alignItems = "flex-start";
+    head.style.gap = "12px";
 
     const qText = document.createElement("div");
     qText.className = "quiz-question";
@@ -515,9 +524,13 @@ function renderAllQuizzes() {
       const img = document.createElement("img");
       img.className = "quiz-image";
       img.alt = "layout";
+      img.style.marginLeft = "auto";
+      img.style.maxWidth = "40%";
+      img.style.height = "auto";
+      img.style.borderRadius = "8px";
+      img.style.boxShadow = "0 2px 10px rgba(0,0,0,0.1)";
+      img.onerror = () => { img.style.display = "none"; }; // 画像が無ければ非表示
       img.src = quiz.imagePath;
-      // 画像がなければ自動非表示
-      img.onerror = () => { img.style.display = "none"; };
       head.appendChild(img);
     }
 
